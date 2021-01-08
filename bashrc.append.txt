@@ -7,4 +7,3 @@ alias ht='history|tail -10'
 alias saru30='sar -u | head -3 ; sar -u |tail -30'
 alias sarq30='sar -q | head -3 ; sar -q |tail -30'
 PS1='[\h:\u:\w] # '
-

@@ -3,12 +3,14 @@ if [ ! -f /home/vagrant/already-installed-flag ]
 then
   echo "ADD EXTRA ALIAS VIA .bashrc"
   cat /vagrant/bashrc.append.txt >> /home/vagrant/.bashrc
+  echo "alias pg='sudo su - postgres'" >> /home/vagrant/.bashrc
+  echo "alias bench='sudo su - bench1'" >> /home/vagrant/.bashrc
+
+
   #echo "GENERAL YUM UPDATE"
   #yum -y update
   #echo "INSTALL GIT"
   yum -y install git
-  #echo "INSTALL VIM"
-  #yum -y install vim
   #echo "INSTALL TREE"
   yum -y install tree
   #echo "INSTALL unzip curl wget lsof"
@@ -42,33 +44,27 @@ then
 
   # install pgbouncer (setup to be completed)
   yum -y install pgbouncer
-  cp /vagrant/pgbouncer.ini /etc/pgbouncer/pgbouncer.ini
-  cp /vagrant/userlist.txt /etc/pgbouncer/userlist.txt
+  #cp /vagrant/pgbouncer.ini /etc/pgbouncer/pgbouncer.ini
+  #cp /vagrant/userlist.txt /etc/pgbouncer/userlist.txt
   
   # Postgres adapter for Python
   yum -y install python-psycopg2
-  
-  # setup environment variables and extra alias for postgres user
-  cat /vagrant/bashrc.append.txt >> /var/lib/pgsql/.bash_profile
-  echo 'export PATH="$PATH:/usr/pgsql-12/bin"' >> /var/lib/pgsql/.bash_profile
 
 
-  # setup help files
+  # setup bench1 linux user
+  adduser bench1
+  # setup bench1 postgres user and database
+  su -c "createuser bench1" -s /bin/sh postgres
+  su -c "createdb bench1"  -s /bin/sh postgres
 
-  cp /vagrant/update_alluser_passwords_from_changeme.* /tmp
-  su -c "cp -p /tmp/update_alluser_passwords_from_changeme.* ~" -s /bin/sh postgres
-  su -c "chmod 700 ~/update_alluser_passwords_from_changeme.sh"  -s /bin/sh postgres
-  su -c "~/update_alluser_passwords_from_changeme.sh <new-secure-password>" -s /bin/sh postgres
 
-  sudo cat /vagrant/environment >> /etc/environment
-  cp /vagrant/quick-start-setup-pg-ora-demo-scripts.sh /tmp
-  cp /vagrant/quick-start-setup-pg-ora-demo-scripts.sql /tmp
-  su -c "cp -p /tmp/quick-start-setup-pg-ora-demo-scripts.* ~" -s /bin/sh postgres
-  su -c "chmod 700 ~/quick-start-setup-pg-ora-demo-scripts.sh"  -s /bin/sh postgres
-  cp /vagrant/update_alluser_passwords_from_changeme.sh /tmp
-  cp /vagrant/update_alluser_passwords_from_changeme.sql /tmp
-  su -c "cp -p /tmp/update_alluser_passwords_from_changeme.* ~" -s /bin/sh postgres
-  su -c "chmod 700 ~/update_alluser_passwords_from_changeme.sh"  -s /bin/sh postgres
+  # setup environment variables and extra alias for postgres and bench1 user
+  echo 'export PATH="$PATH:/usr/pgsql-12/bin"' >> /vagrant/bashrc.append.txt
+  cp /vagrant/bashrc.append.txt /tmp/bashrc.append.txt
+  su -c "cat /tmp/bashrc.append.txt >> ~/.bashrc" -s /bin/sh postgres
+  su -c "cat /tmp/bashrc.append.txt >> ~/.bash_profile" -s /bin/sh postgres
+  su -c "cat /tmp/bashrc.append.txt >> ~/.bashrc" -s /bin/sh bench1
+  su -c "/usr/pgsql-12/bin/pgbench -i -s 15" -s /bin/sh bench1
 
 
 else
