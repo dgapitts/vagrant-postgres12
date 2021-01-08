@@ -11,6 +11,98 @@ Please see https://github.com/dgapitts/vagrant-postgres10 for more details
 # generate a daily summary of process accounting at 23:53
 53 23 * * * /usr/lib64/sa/sa2 -A
 ```
+### systemctl commands for 
+
+These can be run as the standard vagrant user
+```
+[pg12centos7:vagrant:~] # alias pgstatus='echo "sudo systemctl status postgresql-12.service"'
+[pg12centos7:vagrant:~] # alias pgstatus='echo "sudo systemctl start postgresql-12.service";sudo systemctl start postgresql-12.service'
+[pg12centos7:vagrant:~] # alias pgstop='echo "sudo systemctl stop postgresql-12.service";sudo systemctl stop postgresql-12.service'
+```
+
+```
+[pg12centos7:vagrant:~] # pgstatus 
+sudo systemctl status postgresql-12.service
+● postgresql-12.service - PostgreSQL 12 database server
+   Loaded: loaded (/usr/lib/systemd/system/postgresql-12.service; enabled; vendor preset: disabled)
+   Active: active (running) since do 2021-01-07 17:18:16 UTC; 14h ago
+     Docs: https://www.postgresql.org/docs/12/static/
+ Main PID: 16823 (postmaster)
+   CGroup: /system.slice/postgresql-12.service
+           ├─16823 /usr/pgsql-12/bin/postmaster -D /var/lib/pgsql/12/data/
+           ├─16825 postgres: logger   
+           ├─16827 postgres: checkpointer   
+           ├─16828 postgres: background writer   
+           ├─16829 postgres: walwriter   
+           ├─16830 postgres: autovacuum launcher   
+           ├─16831 postgres: stats collector   
+           └─16832 postgres: logical replication launcher   
+
+jan 07 17:18:15 pg12centos7 systemd[1]: Starting PostgreSQL 12 database server...
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.034 UTC [16823] LOG:  starting PostgreSQL 12.5 on x86_64-pc-linux-gnu, com..., 64-bit
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.038 UTC [16823] LOG:  listening on IPv6 address "::1", port 5432
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.038 UTC [16823] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.039 UTC [16823] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.041 UTC [16823] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.051 UTC [16823] LOG:  redirecting log output to logging collector process
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.051 UTC [16823] HINT:  Future log output will appear in directory "log".
+jan 07 17:18:16 pg12centos7 systemd[1]: Started PostgreSQL 12 database server.
+Hint: Some lines were ellipsized, use -l to show in full.
+
+[pg12centos7:vagrant:~] # pgstop
+sudo systemctl stop postgresql-12.service
+[pg12centos7:vagrant:~] # pgstatus 
+sudo systemctl status postgresql-12.service
+● postgresql-12.service - PostgreSQL 12 database server
+   Loaded: loaded (/usr/lib/systemd/system/postgresql-12.service; enabled; vendor preset: disabled)
+   Active: inactive (dead) since vr 2021-01-08 20:32:02 UTC; 7s ago
+     Docs: https://www.postgresql.org/docs/12/static/
+  Process: 16823 ExecStart=/usr/pgsql-12/bin/postmaster -D ${PGDATA} (code=exited, status=0/SUCCESS)
+ Main PID: 16823 (code=exited, status=0/SUCCESS)
+
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.034 UTC [16823] LOG:  starting PostgreSQL 12.5 on x86_64-pc-linux-gnu, com..., 64-bit
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.038 UTC [16823] LOG:  listening on IPv6 address "::1", port 5432
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.038 UTC [16823] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.039 UTC [16823] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.041 UTC [16823] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.051 UTC [16823] LOG:  redirecting log output to logging collector process
+jan 07 17:18:16 pg12centos7 postmaster[16823]: 2021-01-07 17:18:16.051 UTC [16823] HINT:  Future log output will appear in directory "log".
+jan 07 17:18:16 pg12centos7 systemd[1]: Started PostgreSQL 12 database server.
+jan 08 20:32:02 pg12centos7 systemd[1]: Stopping PostgreSQL 12 database server...
+jan 08 20:32:02 pg12centos7 systemd[1]: Stopped PostgreSQL 12 database server.
+Hint: Some lines were ellipsized, use -l to show in full.
+[pg12centos7:vagrant:~] # pgstart
+sudo systemctl  start postgresql-12.service
+[pg12centos7:vagrant:~] # pgstatus 
+sudo systemctl status postgresql-12.service
+● postgresql-12.service - PostgreSQL 12 database server
+   Loaded: loaded (/usr/lib/systemd/system/postgresql-12.service; enabled; vendor preset: disabled)
+   Active: active (running) since vr 2021-01-08 20:32:23 UTC; 4s ago
+     Docs: https://www.postgresql.org/docs/12/static/
+  Process: 32672 ExecStartPre=/usr/pgsql-12/bin/postgresql-12-check-db-dir ${PGDATA} (code=exited, status=0/SUCCESS)
+ Main PID: 32677 (postmaster)
+   CGroup: /system.slice/postgresql-12.service
+           ├─32677 /usr/pgsql-12/bin/postmaster -D /var/lib/pgsql/12/data/
+           ├─32679 postgres: logger   
+           ├─32681 postgres: checkpointer   
+           ├─32682 postgres: background writer   
+           ├─32683 postgres: walwriter   
+           ├─32684 postgres: autovacuum launcher   
+           ├─32685 postgres: stats collector   
+           └─32686 postgres: logical replication launcher   
+
+jan 08 20:32:23 pg12centos7 systemd[1]: Starting PostgreSQL 12 database server...
+jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.205 UTC [32677] LOG:  starting PostgreSQL 12.5 on x86_64-pc-linux-gnu, com..., 64-bit
+jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.208 UTC [32677] LOG:  listening on IPv6 address "::1", port 5432
+jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.208 UTC [32677] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.212 UTC [32677] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.214 UTC [32677] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.224 UTC [32677] LOG:  redirecting log output to logging collector process
+jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.224 UTC [32677] HINT:  Future log output will appear in directory "log".
+jan 08 20:32:23 pg12centos7 systemd[1]: Started PostgreSQL 12 database server.
+Hint: Some lines were ellipsized, use -l to show in full.
+```
+
 
 ### Manually running quick-start-setup-pg-ora-demo-scripts.sh
 
