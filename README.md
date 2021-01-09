@@ -11,12 +11,12 @@ Please see https://github.com/dgapitts/vagrant-postgres10 for more details
 # generate a daily summary of process accounting at 23:53
 53 23 * * * /usr/lib64/sa/sa2 -A
 ```
-### systemctl commands for 
+### systemctl commands for postgresql-12.service for status/start/stop with alias' for vagrant user
 
 These can be run as the standard vagrant user
 ```
-[pg12centos7:vagrant:~] # alias pgstatus='echo "sudo systemctl status postgresql-12.service"'
-[pg12centos7:vagrant:~] # alias pgstatus='echo "sudo systemctl start postgresql-12.service";sudo systemctl start postgresql-12.service'
+[pg12centos7:vagrant:~] # alias pgstatus='echo "sudo systemctl status postgresql-12.service";sudo systemctl status postgresql-12.service'
+[pg12centos7:vagrant:~] # alias pgstart='echo "sudo systemctl start postgresql-12.service";sudo systemctl start postgresql-12.service'
 [pg12centos7:vagrant:~] # alias pgstop='echo "sudo systemctl stop postgresql-12.service";sudo systemctl stop postgresql-12.service'
 ```
 
@@ -101,6 +101,70 @@ jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.224 UTC [3267
 jan 08 20:32:23 pg12centos7 postmaster[32677]: 2021-01-08 20:32:23.224 UTC [32677] HINT:  Future log output will appear in directory "log".
 jan 08 20:32:23 pg12centos7 systemd[1]: Started PostgreSQL 12 database server.
 Hint: Some lines were ellipsized, use -l to show in full.
+```
+
+
+### pg_ctl to reload/status/start/stop/restart postgresql-12.service as postgres user
+
+This should be run as the postgres user
+```
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ status
+pg_ctl: server is running (PID: 16401)
+/usr/pgsql-12/bin/postgres "-D" "/var/lib/pgsql/12/data/"
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ reload
+server signaled
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ status
+pg_ctl: server is running (PID: 16401)
+```
+
+The reload operation picks up new .conf setting but as above we are still running on the same PID.
+
+Next a stop and then start 
+```
+/usr/pgsql-12/bin/postgres "-D" "/var/lib/pgsql/12/data/"
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ stop
+waiting for server to shut down.... done
+server stopped
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ start
+waiting for server to start....2021-01-09 09:14:58.562 UTC [28968] LOG:  starting PostgreSQL 12.5 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39), 64-bit
+2021-01-09 09:14:58.566 UTC [28968] LOG:  listening on IPv6 address "::1", port 5432
+2021-01-09 09:14:58.566 UTC [28968] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2021-01-09 09:14:58.569 UTC [28968] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2021-01-09 09:14:58.573 UTC [28968] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2021-01-09 09:14:58.590 UTC [28968] LOG:  redirecting log output to logging collector process
+2021-01-09 09:14:58.590 UTC [28968] HINT:  Future log output will appear in directory "log".
+ done
+server started
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ status
+pg_ctl: server is running (PID: 28968)
+/usr/pgsql-12/bin/postgres "-D" "/var/lib/pgsql/12/data"
+```
+there is a restart option runs back-to-back stop and start commands
+
+```
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ restart
+waiting for server to shut down.... done
+server stopped
+waiting for server to start....2021-01-09 09:19:13.980 UTC [28987] LOG:  starting PostgreSQL 12.5 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39), 64-bit
+2021-01-09 09:19:13.982 UTC [28987] LOG:  listening on IPv6 address "::1", port 5432
+2021-01-09 09:19:13.982 UTC [28987] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2021-01-09 09:19:13.984 UTC [28987] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2021-01-09 09:19:13.986 UTC [28987] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2021-01-09 09:19:14.001 UTC [28987] LOG:  redirecting log output to logging collector process
+2021-01-09 09:19:14.001 UTC [28987] HINT:  Future log output will appear in directory "log".
+ done
+server started
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ status
+pg_ctl: server is running (PID: 28987)
+/usr/pgsql-12/bin/postgres "-D" "/var/lib/pgsql/12/data"
+[pg12centos7:postgres:~] # ps -ef|grep 28987
+postgres 28987     1  0 09:19 ?        00:00:00 /usr/pgsql-12/bin/postgres -D /var/lib/pgsql/12/data
+postgres 28988 28987  0 09:19 ?        00:00:00 postgres: logger
+postgres 28990 28987  0 09:19 ?        00:00:00 postgres: checkpointer
+postgres 28991 28987  0 09:19 ?        00:00:00 postgres: background writer
+postgres 28992 28987  0 09:19 ?        00:00:00 postgres: walwriter
+postgres 28993 28987  0 09:19 ?        00:00:00 postgres: autovacuum launcher
+postgres 28994 28987  0 09:19 ?        00:00:00 postgres: stats collector
 ```
 
 
