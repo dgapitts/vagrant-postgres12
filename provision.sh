@@ -49,13 +49,18 @@ then
   
   # Postgres adapter for Python
   yum -y install python-psycopg2
-
+  
+  # prevent vagrant user ssh warning "setlocale: LC_CTYPE: cannot change locale (UTF-8): No such file or directory"
+  sudo cat /vagrant/environment >> /etc/environment
 
   # setup bench1 linux user
   adduser bench1
   # setup bench1 postgres user and database
   su -c "createuser bench1" -s /bin/sh postgres
   su -c "createdb bench1"  -s /bin/sh postgres
+  # setup vagrant postgres user and database
+  su -c "createuser vagrant" -s /bin/sh postgres
+  su -c "createdb vagrant"  -s /bin/sh postgres
 
 
   # setup environment variables and extra alias for postgres and bench1 user
