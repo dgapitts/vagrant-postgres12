@@ -119,7 +119,7 @@ pg_ctl: server is running (PID: 16401)
 
 The reload operation picks up new .conf setting but as above we are still running on the same PID.
 
-Next a stop and then start 
+Next with a stop and then start, the postmaster (the postgres master) is on a new PID:
 ```
 /usr/pgsql-12/bin/postgres "-D" "/var/lib/pgsql/12/data/"
 [pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ stop
@@ -166,6 +166,70 @@ postgres 28992 28987  0 09:19 ?        00:00:00 postgres: walwriter
 postgres 28993 28987  0 09:19 ?        00:00:00 postgres: autovacuum launcher
 postgres 28994 28987  0 09:19 ?        00:00:00 postgres: stats collector
 ```
+
+### reviewing pg_ctl shutdown modes 
+
+There are three shutdown modes smart, fast and immediate
+```
+[pg12centos7:postgres:~] # pg_ctl --help | grep -A4 '^Shutdown modes'
+Shutdown modes are:
+  smart       quit after all clients have disconnected
+  fast        quit directly, with proper shutdown (default)
+  immediate   quit without complete shutdown; will lead to recovery on restart
+
+```
+
+here are a few notes, including a comparison to how the same terms are used in oracle but with a significantly different meaning: 
+* smart is potentially very slow i.e. politely waiting for all connections to disconn
+* fast (default) is reasonably fast, assuming the db is in a healthy state and cleanly shuts down the db i.e. like an oracle "shutdown immediate"
+* immediate this is very fast, but crash recovery is required on the db restart i.e. this is similar to the oracle "shutdown abort" and not like an oracle "shutdown immediate"
+```
+
+for an idle database these are all loosely equivalent:
+
+```
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ status
+pg_ctl: server is running (PID: 1694)
+/usr/pgsql-12/bin/postgres "-D" "/var/lib/pgsql/12/data"
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ stop immediate
+pg_ctl: too many command-line arguments (first is "stop")
+Try "pg_ctl --help" for more information.
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ stop -m immediate
+waiting for server to shut down.... done
+server stopped
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ start
+waiting for server to start....2021-01-09 16:14:20.392 UTC [1715] LOG:  starting PostgreSQL 12.5 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39), 64-bit
+2021-01-09 16:14:20.393 UTC [1715] LOG:  listening on IPv6 address "::1", port 5432
+2021-01-09 16:14:20.393 UTC [1715] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2021-01-09 16:14:20.396 UTC [1715] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2021-01-09 16:14:20.399 UTC [1715] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2021-01-09 16:14:20.419 UTC [1715] LOG:  redirecting log output to logging collector process
+2021-01-09 16:14:20.419 UTC [1715] HINT:  Future log output will appear in directory "log".
+ done
+server started
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ stop -m fast
+waiting for server to shut down.... done
+server stopped
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ start
+waiting for server to start....2021-01-09 16:15:18.774 UTC [1728] LOG:  starting PostgreSQL 12.5 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 4.8.5 20150623 (Red Hat 4.8.5-39), 64-bit
+2021-01-09 16:15:18.774 UTC [1728] LOG:  listening on IPv6 address "::1", port 5432
+2021-01-09 16:15:18.775 UTC [1728] LOG:  listening on IPv4 address "127.0.0.1", port 5432
+2021-01-09 16:15:18.776 UTC [1728] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+2021-01-09 16:15:18.779 UTC [1728] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5432"
+2021-01-09 16:15:18.796 UTC [1728] LOG:  redirecting log output to logging collector process
+2021-01-09 16:15:18.796 UTC [1728] HINT:  Future log output will appear in directory "log".
+ done
+server started
+[pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ stop -m smart
+waiting for server to shut down.... done
+server stopped
+[pg12centos7:postgres:~] # pg_ctl --help | grep -A3 '^Shutdown modes'
+Shutdown modes are:
+  smart       quit after all clients have disconnected
+  fast        quit directly, with proper shutdown (default)
+  immediate   quit without complete shutdown; will lead to recovery on restart
+```
+
 
 
 ### Manually running quick-start-setup-pg-ora-demo-scripts.sh
