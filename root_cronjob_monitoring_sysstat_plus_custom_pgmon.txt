@@ -1,0 +1,6 @@
+# run system activity accounting tool every 1 minutes
+*/1 * * * * /usr/lib64/sa/sa1 1 1
+# generate a daily summary of process accounting at 23:53
+53 23 * * * /usr/lib64/sa/sa2 -A
+# pgmon crontjob running once per hour 355 iterations at (approx) 10 second intervals
+# 0 * * * * su -c "time /pgmon/master_cron.sh 355 10 &> /tmp/postgres.log" -s /bin/sh postgres

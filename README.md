@@ -1,7 +1,11 @@
 ## Quick Intro
 
 This project is a pg12/centos-7 version of vagrant-postgres10 (also centos 7)
-Please see https://github.com/dgapitts/vagrant-postgres10 for more details
+Please see https://github.com/dgapitts/vagrant-postgres10 for more details.
+
+I have highlighted some of the key setup processes below.
+
+Also my wiki page [https://wiki.ebabel.eu/index.php?title=Postgres_pgbench_demo_with_IO_intense_background_task] shows how to run concurrent tests (as vagrant and bench1 users) 
 
 ### Extra manual steps for root sar crontab 
 
@@ -19,7 +23,7 @@ These can be run as the standard vagrant user
 [pg12centos7:vagrant:~] # alias pgstart='echo "sudo systemctl start postgresql-12.service";sudo systemctl start postgresql-12.service'
 [pg12centos7:vagrant:~] # alias pgstop='echo "sudo systemctl stop postgresql-12.service";sudo systemctl stop postgresql-12.service'
 ```
-
+and running this:
 ```
 [pg12centos7:vagrant:~] # pgstatus 
 sudo systemctl status postgresql-12.service
@@ -183,9 +187,9 @@ here are a few notes, including a comparison to how the same terms are used in o
 * smart is potentially very slow i.e. politely waiting for all connections to disconn
 * fast (default) is reasonably fast, assuming the db is in a healthy state and cleanly shuts down the db i.e. like an oracle "shutdown immediate"
 * immediate this is very fast, but crash recovery is required on the db restart i.e. this is similar to the oracle "shutdown abort" and not like an oracle "shutdown immediate"
-```
 
-for an idle database these are all loosely equivalent:
+
+For an idle database these are all loosely equivalent:
 
 ```
 [pg12centos7:postgres:~] # pg_ctl -D /var/lib/pgsql/12/data/ status
@@ -328,5 +332,17 @@ su -c "cat /tmp/pg_hba.conf > /var/lib/pgsql/10/data/pg_hba.conf" -s /bin/sh pos
 systemctl stop postgresql-12.service
 systemctl start postgresql-12.service
 ```
+
+### Running pgbench to show the affect expensive background (OLAP) tasks
+
+For some time I've been wondering about the impact of expensive background (OLAP) tasks (taking 1000) on standard OLTP short queries (taking 1 or 2 ms):
+
+* the background tasks are clearly using CPU and IO in themselves
+* but also this may flush the shared_buffers and so slow down other regular OLTP
+* are these background tasks going to be even more expensive with pg12 which parallelization enabled by default
+
+For more details please see my wiki page analysis:
+https://wiki.ebabel.eu/index.php?title=Postgres_pgbench_demo_with_IO_intense_background_task
+
 
 

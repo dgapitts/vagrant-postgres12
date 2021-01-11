@@ -2,6 +2,7 @@
 if [ ! -f /home/vagrant/already-installed-flag ]
 then
   echo "ADD EXTRA ALIAS VIA .bashrc"
+  echo 'export PATH="$PATH:/usr/pgsql-12/bin"' >> /vagrant/bashrc.append.txt
   cat /vagrant/bashrc.append.txt >> /home/vagrant/.bashrc
   echo "alias pg='sudo su - postgres'" >> /home/vagrant/.bashrc
   echo "alias bench='sudo su - bench1'" >> /home/vagrant/.bashrc
@@ -64,13 +65,23 @@ then
 
 
   # setup environment variables and extra alias for postgres and bench1 user
-  echo 'export PATH="$PATH:/usr/pgsql-12/bin"' >> /vagrant/bashrc.append.txt
   cp /vagrant/bashrc.append.txt /tmp/bashrc.append.txt
   su -c "cat /tmp/bashrc.append.txt >> ~/.bashrc" -s /bin/sh postgres
   su -c "cat /tmp/bashrc.append.txt >> ~/.bash_profile" -s /bin/sh postgres
   su -c "cat /tmp/bashrc.append.txt >> ~/.bashrc" -s /bin/sh bench1
-  su -c "/usr/pgsql-12/bin/pgbench -i -s 15" -s /bin/sh bench1
 
+  # initial data load for 
+  su -c "/usr/pgsql-12/bin/pgbench -i -s 30" -s /bin/sh bench1
+  su -c "/usr/pgsql-12/bin/pgbench -i -s 3" -s /bin/sh vagrant
+
+  # download monitoring and demo scripts to common directory i.e. accessible by postgres, bench1 and vagrant databases
+  cd /
+  git clone https://github.com/dgapitts/pg-ora-demo-scripts.git
+  chmod 777 -R /pg-ora-demo-scripts
+  ls -rl /pg-ora-demo-scripts
+  
+  # initial cron
+  crontab /vagrant/root_cronjob_monitoring_sysstat_plus_custom_pgmon.txt
 
 else
   echo "already installed flag set : /home/vagrant/already-installed-flag"
