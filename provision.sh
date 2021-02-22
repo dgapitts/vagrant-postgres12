@@ -83,6 +83,11 @@ then
   # initial cron
   crontab /vagrant/root_cronjob_monitoring_sysstat_plus_custom_pgmon.txt
 
+
+  # Add ShellCheck https://github.com/koalaman/shellcheck - a great tool for testing and improving the quality of shell scripts
+  yum -y install epel-release
+  yum -y install ShellCheck
+
 else
   echo "already installed flag set : /home/vagrant/already-installed-flag"
 fi
