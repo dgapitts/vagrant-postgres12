@@ -24,8 +24,10 @@ then
 
   # Regular pg12 install                                                                           
   # As of 15 April 2019, there is only one repository RPM per distro, and it includes repository information for all available PostgreSQL releases.
-  rpm -ivh https://yum.postgresql.org/9.6/redhat/rhel-7.3-x86_64/pgdg-redhat-repo-latest.noarch.rpm
-  #rpm -Uvh https://yum.postgresql.org/12/redhat/rhel-7-x86_64/pgdg-centos12-12-2.noarch.rpm
+  # rpm -ivh https://yum.postgresql.org/9.6/redhat/rhel-7.3-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+  # rpm -Uvh https://yum.postgresql.org/12/redhat/rhel-7-x86_64/pgdg-centos12-12-2.noarch.rpm
+  # https://yum.postgresql.org/repopackages/
+  rpm -ivh https://download.postgresql.org/pub/repos/yum/reporpms/EL-7-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 
   yum -y update
   yum -y install postgresql12-server postgresql12
